@@ -1,0 +1,1 @@
+You cant use this code for any of yore cursed plan's , if ye may have some on mind.  Stay off EVILGRID!
