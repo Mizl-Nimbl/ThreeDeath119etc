@@ -6,7 +6,7 @@ project(death
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
-set(vk-bootstrap_DIR "/home/mizl/Documents/DeathDeathDeath1191813123/include/vk-bootstrap/lib64/cmake/vk-bootstrap/")
+set(vk-bootstrap_DIR "/home/mizl/Documents/Guhg/ThreeDeath119etc/include/vk-bootstrap/lib64/cmake/vk-bootstrap")
 
 include_directories(
   ${GLM_INCLUDE_DIRS}
