@@ -21,7 +21,7 @@ using namespace std;
 		VkResult err = x;                                           \
 		if (err)                                                    \
 		{                                                           \
-			std::cout <<"Detected Vulkan error: " << err << std::endl; \
+			std::cout << "Detected Vulkan error: " << err << std::endl; \
 			abort();                                                \
 		}                                                           \
 	} while (0)
@@ -33,7 +33,7 @@ void VulkanEngine::init()
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
 	
 	_window = SDL_CreateWindow(
-		"Vulkan Engine",
+		"3xDeath119...",
 		_windowExtent.width,
 		_windowExtent.height,
 		window_flags
@@ -50,9 +50,7 @@ void VulkanEngine::init()
 	init_commands();
 
 	init_sync_structures();
-
-
-	//everything went fine
+	
 	_isInitialized = true;
 }
 void VulkanEngine::cleanup()
@@ -92,6 +90,8 @@ void VulkanEngine::cleanup()
 
 void VulkanEngine::draw()
 {
+	VkCommandBuffer cmd = _mainCommandBuffer;
+
 	//check if window is minimized and skip drawing
 	if (SDL_GetWindowFlags(_window) & SDL_WINDOW_MINIMIZED)
 		return;
@@ -101,24 +101,23 @@ void VulkanEngine::draw()
 	VK_CHECK(vkResetFences(_device, 1, &_renderFence));
 
 	//now that we are sure that the commands finished executing, we can safely reset the command buffer to begin recording again.
-	VK_CHECK(vkResetCommandBuffer(_mainCommandBuffer, 0));
+	VK_CHECK(vkResetCommandBuffer(cmd, 0));
 
 	//request image from the swapchain
 	uint32_t swapchainImageIndex;
 	VK_CHECK(vkAcquireNextImageKHR(_device, _swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex));
-
-	//naming it cmd for shorter writing
-	VkCommandBuffer cmd = _mainCommandBuffer;
-
+	
 	//begin the command buffer recording. We will use this command buffer exactly once, so we want to let vulkan know that
 	VkCommandBufferBeginInfo cmdBeginInfo = vkinit::command_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 	VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
-	//make a clear-color from frame number. This will flash with a 120 frame period.
+	//make a clear-color from frame number. This will flash with a 12 frame period.
 	VkClearValue clearValue;
-	float flash = abs(glm::sin(_frameNumber / 120.f));
-	clearValue.color = { { 0.0f, 0.0f, flash, 1.0f } };
+	float flash_b = abs(glm::sin(_frameNumber / 12.0f));
+	float flash_g = abs(glm::cos(_frameNumber / 12.0f));
+	float flash_r = abs(glm::tan(_frameNumber / 12.0f));
+	clearValue.color = { { flash_r, flash_g, flash_b, 1.0f } };
 
 	//start the main renderpass. 
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us
@@ -129,10 +128,11 @@ void VulkanEngine::draw()
 	rpInfo.pClearValues = &clearValue;
 
 	vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
+	//render pass begin
 
 	//once we start adding rendering commands, they will go here
 
-	//finalize the render pass
+	//render pass end
 	vkCmdEndRenderPass(cmd);
 	//finalize the command buffer (we can no longer add commands, but it can now be executed)
 	VK_CHECK(vkEndCommandBuffer(cmd));
