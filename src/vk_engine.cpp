@@ -60,6 +60,22 @@ void VulkanEngine::cleanup()
 		//make sure the gpu has stopped doing its things
 		vkDeviceWaitIdle(_device);
 
+		//free per-frame structures and deletion queue
+		for (int i = 0; i < FRAME_OVERLAP; i++) {
+
+			vkDestroyCommandPool(_device, _frames[i]._commandPool, nullptr);
+
+			//destroy sync objects
+			vkDestroyFence(_device, _frames[i]._renderFence, nullptr);
+			vkDestroySemaphore(_device, _frames[i]._renderSemaphore, nullptr);
+			vkDestroySemaphore(_device, _frames[i]._swapchainSemaphore, nullptr);
+
+			_frames[i]._deletionQueue.flush();
+		}
+
+		//flush the global deletion queue
+		_mainDeletionQueue.flush();
+
 		vkDestroyCommandPool(_device, _commandPool, nullptr);
 
 		//destroy sync objects
@@ -98,6 +114,7 @@ void VulkanEngine::draw()
 
 	//wait until the gpu has finished rendering the last frame. Timeout of 1 second
 	VK_CHECK(vkWaitForFences(_device, 1, &_renderFence, true, 1000000000));
+	get_current_frame()._deletionQueue.flush();
 	VK_CHECK(vkResetFences(_device, 1, &_renderFence));
 
 	//now that we are sure that the commands finished executing, we can safely reset the command buffer to begin recording again.
@@ -114,10 +131,8 @@ void VulkanEngine::draw()
 
 	//make a clear-color from frame number. This will flash with a 12 frame period.
 	VkClearValue clearValue;
-	float flash_b = abs(glm::sin(_frameNumber / 12.0f));
-	float flash_g = abs(glm::cos(_frameNumber / 12.0f));
-	float flash_r = abs(glm::tan(_frameNumber / 12.0f));
-	clearValue.color = { { flash_r, flash_g, flash_b, 1.0f } };
+	float r_color = abs(glm::cos(_frameNumber / 60.0f));
+	clearValue.color = { { r_color, 0.0f, 0.0f, 1.0f } };
 
 	//start the main renderpass. 
 	//We will use the clear color from above, and the framebuffer of the index the swapchain gave us

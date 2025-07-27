@@ -2,6 +2,39 @@
 
 #include "../include/vk_types.h"
 #include <vector>
+#include <deque>
+#include <functional>
+#include <vk_mem_alloc.h>
+
+struct DeletionQueue 
+{
+	std::deque<std::function<void()>> deletors;
+
+	void push_function(std::function<void()>&& function) {
+		deletors.push_back(function);
+	}
+
+	void flush() {
+		// reverse iterate the deletion queue to execute all the functions
+		for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
+			(*it)(); //call functors
+		}
+
+		deletors.clear();
+	}
+};
+
+struct FrameData {
+	VkSemaphore _swapchainSemaphore, _renderSemaphore;
+	VkFence _renderFence;
+
+	VkCommandPool _commandPool;
+	VkCommandBuffer _mainCommandBuffer;
+
+	DeletionQueue _deletionQueue;
+};
+
+constexpr unsigned int FRAME_OVERLAP = 2;
 
 class VulkanEngine {
 public:
@@ -20,6 +53,12 @@ public:
 
 	VkSemaphore _presentSemaphore, _renderSemaphore;
 	VkFence _renderFence;
+
+	FrameData _frames[FRAME_OVERLAP];
+
+	FrameData& get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
+
+	DeletionQueue _mainDeletionQueue;
 
 	VkQueue _graphicsQueue;
 	uint32_t _graphicsQueueFamily;
