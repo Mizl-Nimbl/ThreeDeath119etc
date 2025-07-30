@@ -38,6 +38,7 @@ target_link_libraries(death GPUOpen::VulkanMemoryAllocator)
 target_link_libraries(death Vulkan::Vulkan)
 target_link_libraries(death fmt::fmt)
 target_link_libraries(death vk-bootstrap::vk-bootstrap)
+
 # option(TESTING "Enable tests." ON)
 # if(TESTING)
 #   enable_testing()
