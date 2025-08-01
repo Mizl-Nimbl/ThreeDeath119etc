@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../include/vk_types.h"
+#include "../include/vk_descriptors.h"
+#include "../include/vk_pipelines.h"
 #include <vector>
 #include <deque>
 #include <functional>
@@ -54,6 +56,8 @@ public:
 	VkSemaphore _presentSemaphore, _renderSemaphore;
 	VkFence _renderFence;
 
+	AllocatedImage _drawImage;
+
 	FrameData _frames[FRAME_OVERLAP];
 
 	FrameData& get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
@@ -71,10 +75,19 @@ public:
 	VkSurfaceKHR _surface;
 	VkSwapchainKHR _swapchain;
 	VkFormat _swachainImageFormat;
+	VkExtent2D _swapchainExtent;
+	VkExtent2D _drawExtent;
 
 	std::vector<VkFramebuffer> _framebuffers;
 	std::vector<VkImage> _swapchainImages;
 	std::vector<VkImageView> _swapchainImageViews;
+
+	DescriptorAllocator globalDescriptorAllocator;
+	VkDescriptorSet _drawImageDescriptors;
+	VkDescriptorSetLayout _drawImageDescriptorLayout;
+
+	VkPipeline _gradientPipeline;
+	VkPipelineLayout _gradientPipelineLayout;
 
 	//initializes everything in the engine
 	void init();
@@ -101,4 +114,10 @@ private:
 	void init_commands();
 
 	void init_sync_structures();
+
+	void init_descriptors();
+
+	void init_pipelines();
+
+	void init_background_pipelines();
 };

@@ -16,7 +16,11 @@ for arg in "$@"; do
             ;;
         --compile|-c)
             cd build
-            cmake --build . --verbose
+            cmake --build .
+            ;;
+        --shaders|-d)
+            cd build
+            cmake --build . --target Shaders
             ;;
         --test|-t)
             cd build

@@ -28,6 +28,7 @@
           xorg.libXcursor
           xorg.libXi
           xorg.libX11
+          glslang
         ];
         shellHook = ''
           export CMAKE_PREFIX_PATH=${pkgs.vulkan-memory-allocator}/lib/cmake:$CMAKE_PREFIX_PATH
